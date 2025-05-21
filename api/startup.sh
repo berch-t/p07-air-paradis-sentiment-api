@@ -2,7 +2,7 @@
 cd `dirname $0`
 
 # Définir la variable PORT pour Azure
-export PORT=8000
+export PORT=$WEBSITES_PORT
 
 # Activer le mode simulation si nécessaire
 export SIMULATION_MODE=true
