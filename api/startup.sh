@@ -8,7 +8,7 @@ export PORT=8000
 export SIMULATION_MODE=false
 
 # Installer les dépendances
-pip install -r requirements.txt
+pip install -r api/requirements.txt
 
 # Démarrer l'application
 gunicorn main:app --bind=0.0.0.0:$PORT --timeout 600 --workers 2 --worker-class uvicorn.workers.UvicornWorker
