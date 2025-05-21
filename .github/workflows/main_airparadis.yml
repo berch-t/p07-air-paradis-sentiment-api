@@ -124,5 +124,4 @@ jobs:
       id: deploy-to-webapp
       with:
         app-name: 'airparadis'
-        slot-name: 'Production'
         publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EF1A0A46D7FC4FAA838D49433C06F4BD }}
