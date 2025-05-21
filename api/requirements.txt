@@ -29,7 +29,6 @@ numpy==1.24.3
 pandas==2.0.3
 requests==2.31.0
 python-multipart==0.0.6
-uuid==1.30
 
 # Dev et tests
 pytest==7.4.2
