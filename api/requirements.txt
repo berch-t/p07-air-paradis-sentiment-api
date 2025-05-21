@@ -1,0 +1,36 @@
+# Dépendance spécifique pour résoudre le conflit
+typing-extensions==4.5.0
+
+# Bibliothèques principales pour l'API (versions ajustées)
+fastapi==0.95.2
+uvicorn==0.22.0
+pydantic==1.10.8
+python-dotenv==1.0.0
+gunicorn==20.1.0
+
+# Bibliothèques pour le modèle BERT
+tensorflow==2.13.0
+transformers==4.30.2
+tensorflow-hub==0.14.0
+
+# Traitement du langage naturel
+nltk==3.8.1
+
+# MLflow pour le tracking et la gestion des modèles
+mlflow==2.8.0
+boto3==1.28.62
+
+# Azure Application Insights pour le monitoring
+opencensus-ext-azure==1.1.9
+applicationinsights==0.11.10
+
+# Outils et utilitaires
+numpy==1.24.3
+pandas==2.0.3
+requests==2.31.0
+python-multipart==0.0.6
+uuid==1.30
+
+# Dev et tests
+pytest==7.4.2
+httpx==0.24.1
