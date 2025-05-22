@@ -20,7 +20,7 @@ from typing import Dict, List, Any
 import traceback
 
 # Importation des bibliothèques spécifiques à BERT
-from transformers import DistilBertTokenizer, TFDistilBertForSequenceClassification
+from transformers import BertTokenizer, TFBertForSequenceClassification
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -270,10 +270,10 @@ def load_model_from_mlflow():
         tokenizer_path = str(MODEL_DIR / "tokenizer")
         
         # Charger le modèle BERT
-        model = TFDistilBertForSequenceClassification.from_pretrained(model_path)
+        model = TFBertForSequenceClassification.from_pretrained(model_path)
         
         # Charger le tokenizer BERT
-        tokenizer = DistilBertTokenizer.from_pretrained(tokenizer_path)
+        tokenizer = BertTokenizer.from_pretrained(tokenizer_path)
         
         logger.info("Modèle BERT et tokenizer chargés avec succès.")
         
@@ -291,25 +291,43 @@ def load_model_from_mlflow():
 # Fonction pour charger le modèle BERT depuis une source distante
 def load_model_from_huggingface():
     """
-    Charge un modèle DistilBERT pré-entraîné directement depuis Hugging Face.
+    Charge un modèle BERT pré-entraîné directement depuis Hugging Face.
     Utilise cette fonction comme fallback si le modèle MLflow n'est pas disponible.
     """
     try:
-        logger.info("Tentative de chargement d'un modèle DistilBERT pré-entraîné depuis Hugging Face...")
+        logger.info("Tentative de chargement d'un modèle BERT pré-entraîné depuis Hugging Face...")
         
-        # Charger un modèle pré-entraîné pour la classification de sentiments
-        model = TFDistilBertForSequenceClassification.from_pretrained(
-            'distilbert-base-uncased-finetuned-sst-2-english',
-            cache_dir='./hf_cache'
-        )
+        # Utiliser un modèle pré-entraîné pour la classification de sentiments
+        model_name = 'bert-base-uncased'
         
-        # Charger le tokenizer correspondant
-        tokenizer = DistilBertTokenizer.from_pretrained(
-            'distilbert-base-uncased-finetuned-sst-2-english',
-            cache_dir='./hf_cache'
-        )
+        # Créer le répertoire de cache s'il n'existe pas
+        cache_dir = Path('./hf_cache')
+        cache_dir.mkdir(exist_ok=True)
         
-        logger.info("Modèle DistilBERT pré-entraîné chargé avec succès depuis Hugging Face.")
+        # Charger le modèle avec gestion des erreurs
+        try:
+            model = TFBertForSequenceClassification.from_pretrained(
+                model_name,
+                num_labels=2,  # Pour classification binaire (positif/négatif)
+                cache_dir=str(cache_dir),
+                local_files_only=False  # Permettre le téléchargement si nécessaire
+            )
+        except Exception as model_error:
+            logger.error(f"Erreur lors du chargement du modèle: {str(model_error)}")
+            return None
+            
+        # Charger le tokenizer avec gestion des erreurs
+        try:
+            tokenizer = BertTokenizer.from_pretrained(
+                model_name,
+                cache_dir=str(cache_dir),
+                local_files_only=False  # Permettre le téléchargement si nécessaire
+            )
+        except Exception as tokenizer_error:
+            logger.error(f"Erreur lors du chargement du tokenizer: {str(tokenizer_error)}")
+            return None
+        
+        logger.info("Modèle BERT pré-entraîné chargé avec succès depuis Hugging Face.")
         
         return {
             "model": model,
@@ -337,12 +355,38 @@ def load_model_from_local():
         if not model_path.exists() or not tokenizer_path.exists():
             logger.error("Les dossiers model et/ou tokenizer n'existent pas localement.")
             return None
+            
+        # Vérifier les fichiers nécessaires
+        required_model_files = ["config.json", "tf_model.h5"]
+        required_tokenizer_files = ["vocab.txt", "tokenizer_config.json"]
+        
+        model_files = [f.name for f in model_path.glob("*")]
+        tokenizer_files = [f.name for f in tokenizer_path.glob("*")]
+        
+        missing_model_files = [f for f in required_model_files if f not in model_files]
+        missing_tokenizer_files = [f for f in required_tokenizer_files if f not in tokenizer_files]
+        
+        if missing_model_files or missing_tokenizer_files:
+            logger.error(f"Fichiers manquants dans les dossiers locaux:")
+            if missing_model_files:
+                logger.error(f"Dans model/: {', '.join(missing_model_files)}")
+            if missing_tokenizer_files:
+                logger.error(f"Dans tokenizer/: {', '.join(missing_tokenizer_files)}")
+            return None
         
         # Charger le modèle BERT
-        model = TFDistilBertForSequenceClassification.from_pretrained(str(model_path))
+        try:
+            model = TFBertForSequenceClassification.from_pretrained(str(model_path))
+        except Exception as e:
+            logger.error(f"Erreur lors du chargement du modèle: {str(e)}")
+            return None
         
         # Charger le tokenizer BERT
-        tokenizer = DistilBertTokenizer.from_pretrained(str(tokenizer_path))
+        try:
+            tokenizer = BertTokenizer.from_pretrained(str(tokenizer_path))
+        except Exception as e:
+            logger.error(f"Erreur lors du chargement du tokenizer: {str(e)}")
+            return None
         
         logger.info("Modèle BERT et tokenizer chargés avec succès depuis le dossier local.")
         
