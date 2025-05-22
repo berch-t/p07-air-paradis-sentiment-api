@@ -117,7 +117,7 @@ def test_info_endpoint(client):
     env = result["environment"]
     assert "MAX_SEQUENCE_LENGTH" in env
     assert "FORCE_CPU" in env
-    assert env["FORCE_CPU"] == "true"  # On force le CPU dans les tests
+    assert env["FORCE_CPU"] is True  # On force le CPU dans les tests
 
 def test_feedback_endpoint(client):
     """Teste l'endpoint de feedback."""
